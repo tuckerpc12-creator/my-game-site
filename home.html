@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My games site</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #6a0dad;
+      color: white;
+    }
+    header {
+      padding: 15px 20px;
+      font-size: 22px;
+      font-weight: bold;
+      background: rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+    #searchBar {
+      display: block;
+      margin: 10px auto 20px;
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+    #gameGrid {
+      padding: 0 20px 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .gameCard {
+      background: #222;
+      padding: 40px 20px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .gameCard:hover {
+      transform: scale(1.08);
+      background: #333;
+    }
+    #player {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      flex-direction: column;
+      background: black;
+    }
+    #gameFrame {
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #closeBtn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: rgba(255,255,255,0.8);
+      color: black;
+      font-size: 16px;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #closeBtn:hover {
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <header onclick="goHome()">My game site</header>
+  <input type="text" id="searchBar" placeholder="Search games..." />
+
+  <main id="gameGrid"></main>
+
+  <div id="player">
+    <button id="closeBtn">✖ Close</button>
+    <iframe id="gameFrame"></iframe>
+  </div>
+
+  <!-- Inline JSON with manually added games -->
+  <script id="gamesData" type="application/json">
+[
+  {
+    "name": "Baldi's Basics",
+    "url": "https://deformed-steve.github.io/PortedGames/assets/Baldis%20remake.html"
+  },
+  {
+    "name": "Bendy and the Ink Machine",
+    "url": "https://deformed-steve.github.io/PortedGames/assets/Bendy%20and%20the%20Ink%20Machine.html"
+  }
+]
+  </script>
+
+  <script>
+let manualGames = JSON.parse(document.getElementById("gamesData").textContent);
+let autoGames = [];
+
+// 🔥 Load ALL games from local games.json (root folder)
+async function loadLocalGames() {
+  try {
+    const res = await fetch("games.json"); // root folder
+    if (!res.ok) throw new Error("games.json not found");
+    const files = await res.json();
+
+    autoGames = files.map(name => ({
+      name: name.replace(".html", ""),
+      url: name // root folder
+    }));
+  } catch (e) {
+    console.warn("Failed to load local games.json:", e);
+  }
+}
+
+function showGames(filter = "") {
+  const grid = document.getElementById("gameGrid");
+  grid.innerHTML = "";
+  const allGames = [...manualGames, ...autoGames]
+    .filter(g => g.name.toLowerCase().includes(filter.toLowerCase()));
+
+  allGames.forEach(g => {
+    const card = document.createElement("div");
+    card.className = "gameCard";
+    card.textContent = g.name;
+    card.onclick = () => playGame(g.url);
+    grid.appendChild(card);
+  });
+}
+
+function playGame(url) {
+  document.getElementById("player").style.display = "flex";
+  document.getElementById("gameFrame").src = url;
+}
+
+function closeGame() {
+  document.getElementById("gameFrame").src = "";
+  document.getElementById("player").style.display = "none";
+}
+
+function goHome() {
+  closeGame();
+  showGames();
+}
+
+document.getElementById("closeBtn").addEventListener("click", closeGame);
+
+// Search bar filtering
+document.getElementById("searchBar").addEventListener("input", (e) => {
+  showGames(e.target.value);
+});
+
+// initialize
+(async () => {
+  await loadLocalGames();
+  showGames();
+})();
+  </script>
+</body>
+</html>
