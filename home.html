@@ -94,78 +94,78 @@
   <script id="gamesData" type="application/json">
 [
   {
-    "name": "Baldi's Basics",
-    "url": "https://deformed-steve.github.io/PortedGames/assets/Baldis%20remake.html"
+    "name": "Bendy",
+    "url": "https://cdn.jsdelivr.net/gh/Deformed-steve/PortedGames/assets/Bendy%20and%20the%20Ink%20Machine.html"
   },
   {
-    "name": "Bendy and the Ink Machine",
-    "url": "https://deformed-steve.github.io/PortedGames/assets/Bendy%20and%20the%20Ink%20Machine.html"
+    "name": "Baldi's Remastered",
+    "url": "https://cdn.jsdelivr.net/gh/Deformed-steve/PortedGames/assets/Baldis%20remake.html"
   }
 ]
   </script>
 
-  <script>
+ <script>
 let manualGames = JSON.parse(document.getElementById("gamesData").textContent);
 let autoGames = [];
 
 // 🔥 Load ALL games from local games.json (root folder)
 async function loadLocalGames() {
   try {
-    const res = await fetch("games.json"); // root folder
+    const res = await fetch("https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site/games.json");
     if (!res.ok) throw new Error("games.json not found");
     const files = await res.json();
 
     autoGames = files.map(name => ({
       name: name.replace(".html", ""),
-      url: name // root folder
+      url: `https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site/${name}`
     }));
+    renderGames();
   } catch (e) {
     console.warn("Failed to load local games.json:", e);
+    renderGames();
   }
 }
 
-function showGames(filter = "") {
+function renderGames() {
+  const allGames = [...manualGames, ...autoGames];
   const grid = document.getElementById("gameGrid");
   grid.innerHTML = "";
-  const allGames = [...manualGames, ...autoGames]
-    .filter(g => g.name.toLowerCase().includes(filter.toLowerCase()));
-
-  allGames.forEach(g => {
+  allGames.forEach(game => {
     const card = document.createElement("div");
     card.className = "gameCard";
-    card.textContent = g.name;
-    card.onclick = () => playGame(g.url);
+    card.textContent = game.name;
+    card.onclick = () => openGame(game.url);
     grid.appendChild(card);
   });
 }
 
-function playGame(url) {
-  document.getElementById("player").style.display = "flex";
-  document.getElementById("gameFrame").src = url;
+async function openGame(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+    const html = await res.text();
+    const frame = document.getElementById("gameFrame");
+    frame.removeAttribute("src");
+    frame.srcdoc = html;  // 👈 inject and execute HTML
+    document.getElementById("player").style.display = "flex";
+  } catch (err) {
+    console.error("Game load failed:", err);
+    alert("Failed to load game.");
+  }
 }
 
-function closeGame() {
-  document.getElementById("gameFrame").src = "";
+document.getElementById("closeBtn").onclick = () => {
   document.getElementById("player").style.display = "none";
-}
+  document.getElementById("gameFrame").srcdoc = "";
+};
 
 function goHome() {
-  closeGame();
-  showGames();
+  document.getElementById("player").style.display = "none";
+  document.getElementById("gameFrame").srcdoc = "";
 }
 
-document.getElementById("closeBtn").addEventListener("click", closeGame);
-
-// Search bar filtering
-document.getElementById("searchBar").addEventListener("input", (e) => {
-  showGames(e.target.value);
-});
-
-// initialize
-(async () => {
-  await loadLocalGames();
-  showGames();
-})();
-  </script>
+// Kick off
+loadLocalGames();
+</script>
 </body>
 </html>
