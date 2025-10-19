@@ -109,13 +109,13 @@ let autoGames = [];
 
 async function loadLocalGames() {
   try {
-    const res = await fetch("https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site/updatedgames.json");
+    const res = await fetch("https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site@main/updatedgames.json");
     if (!res.ok) throw new Error("updatedgames.json not found");
     const files = await res.json();
 
     autoGames = files.map(name => ({
       name: name.replace(".html", ""),
-      url: `https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site/${name}`
+      url: `https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site@main/${name}`
     }));
     renderGames();
   } catch (e) {
