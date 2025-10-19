@@ -90,7 +90,6 @@
     <iframe id="gameFrame"></iframe>
   </div>
 
-  <!-- Inline JSON with manually added games -->
   <script id="gamesData" type="application/json">
 [
   {
@@ -108,11 +107,10 @@
 let manualGames = JSON.parse(document.getElementById("gamesData").textContent);
 let autoGames = [];
 
-// 🔥 Load ALL games from local games.json (root folder)
 async function loadLocalGames() {
   try {
-    const res = await fetch("https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site/games.json");
-    if (!res.ok) throw new Error("games.json not found");
+    const res = await fetch("https://cdn.jsdelivr.net/gh/tuckerpc12-creator/my-game-site/updatedgames.json");
+    if (!res.ok) throw new Error("updatedgames.json not found");
     const files = await res.json();
 
     autoGames = files.map(name => ({
